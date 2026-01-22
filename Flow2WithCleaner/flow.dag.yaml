@@ -1,0 +1,98 @@
+id: bring_your_own_data_chat_qna
+name: Bring Your Own Data Chat QnA
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  chat_history:
+    type: list
+    default: []
+    is_chat_input: false
+    is_chat_history: true
+  chat_input:
+    type: string
+    default: Can you descibe what "ITEM" is?
+    is_chat_input: true
+outputs:
+  chat_output:
+    type: string
+    reference: ${clean_output.output}
+    is_chat_output: true
+nodes:
+- name: generate_prompt_context
+  type: python
+  source:
+    type: code
+    path: generate_prompt_context.py
+  inputs:
+    search_result: ${lookup_indexed_knowledge.output}
+  use_variants: false
+- name: Prompt_variants
+  use_variants: true
+- name: lookup_indexed_knowledge
+  type: python
+  source:
+    type: code
+    path: tool_lookup.py
+  inputs:
+    query: ${inputs.chat_input}
+  aggregation: false
+  use_variants: false
+- name: gptModel
+  type: python
+  source:
+    type: code
+    path: gpt5_chat.py
+  inputs:
+    system_prompt: You are a helpful assistant
+    user_input: ${inputs.chat_input}
+  use_variants: false
+- name: final_answer
+  type: python
+  source:
+    type: code
+    path: gpt5_chat.py
+  inputs:
+    system_prompt: ${Prompt_variants.output}
+    user_input: ${inputs.chat_input}
+  use_variants: false
+- name: clean_output
+  type: python
+  source:
+    type: code
+    path: clean_response.py
+  inputs:
+    raw_response: ${final_answer.output}
+  use_variants: false
+node_variants:
+  Prompt_variants:
+    default_variant_id: variant_0
+    variants:
+      variant_0:
+        node:
+          type: prompt
+          source:
+            type: code
+            path: Prompt_variants.jinja2
+          inputs:
+            contexts: ${generate_prompt_context.output}
+            chat_input: ${inputs.chat_input}
+      variant_1:
+        node:
+          type: prompt
+          source:
+            type: code
+            path: Prompt_variants__variant_1.jinja2
+          inputs:
+            contexts: ${generate_prompt_context.output}
+            chat_history: ${inputs.chat_history}
+            chat_input: ${inputs.chat_input}
+      variant_2:
+        node:
+          type: prompt
+          source:
+            type: code
+            path: Prompt_variants__variant_2.jinja2
+          inputs:
+            contexts: ${generate_prompt_context.output}
+            chat_history: ${inputs.chat_history}
+            chat_input: ${inputs.chat_input}

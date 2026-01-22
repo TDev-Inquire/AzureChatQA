@@ -1,0 +1,15 @@
+[
+  {
+    "chat_input": "What topics can you answer questions about?",
+    "chat_history": [
+      {
+        "inputs": {
+          "chat_input": "Hello!"
+        },
+        "outputs": {
+          "chat_output": "Hi there! How can I assist you today?"
+        }
+      }
+    ]
+  }
+]

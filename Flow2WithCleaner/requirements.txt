@@ -1,0 +1,6 @@
+promptflow
+promptflow-tools
+azure-search-documents
+azure-identity
+requests
+python-dotenv
